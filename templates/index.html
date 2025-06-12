@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Query Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <!-- Loader overlay removed from here -->
+    <h1>SQL Query Interface</h1>
+
+    <div class="query-mode-toggle">
+        <label class="switch">
+            <input type="checkbox" id="modeToggle">
+            <span class="slider round"></span>
+        </label>
+        <span id="currentModeLabel">SQL Query Mode</span>
+    </div>
+
+    <div id="sqlQuerySection">
+        <form id="queryForm">
+            <label for="query">Enter your SQL query:</label>
+            <textarea id="query" name="query" rows="5" required>SELECT TOP 10 * FROM client</textarea>
+            <button type="submit">Execute Query</button>
+        </form>
+    </div>
+
+    <div id="nlpQuerySection" style="display: none;">
+        <form id="nlpQueryForm">
+            <label for="nlp_query">Enter your question in natural language:</label>
+            <textarea id="nlp_query" name="nlp_query" rows="3" required placeholder="e.g., Show me all clients with turnover more than 1000"></textarea>
+            <button type="submit">Get & Execute SQL</button>
+        </form>
+    </div>
+
+    <h2>Results:</h2>
+    <div id="results" style="position: relative;"> <!-- Added position: relative -->
+        <div class="loader-container" id="loaderContainer" style="display: none;"> <!-- Renamed for clarity -->
+            <div class="loader"></div> <!-- Spinner loader, no inner div needed for simple spinner -->
+        </div>
+        <p class="no-results-message">Submit a query to see results here.</p>
+    </div>
+    <div id="nlpQuerySql" style="margin-top: 15px; padding: 10px; background-color: #e9e9e9; border-radius: 5px; display: none;">
+        <h4>Generated SQL:</h4>
+        <pre style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+    </div>
+    <!-- Removed hr and nlpResults div as NLP results will use the main 'results' div -->
+</div>
+    <script>
+        // Function to display results (used by both forms)
+        function displayResults(data, resultsDiv, generatedSqlDisplayDiv, generatedSql) {
+            if (generatedSqlDisplayDiv && generatedSql) {
+                generatedSqlDisplayDiv.querySelector('pre').textContent = generatedSql;
+                generatedSqlDisplayDiv.style.display = 'block';
+            } else if (generatedSqlDisplayDiv) {
+                generatedSqlDisplayDiv.style.display = 'none';
+            }
+
+            if (data.error) {
+                resultsDiv.innerHTML = `<p class="error">Error: ${data.error}${data.generated_sql ? '<br><br>Attempted SQL: ' + data.generated_sql : ''}</p>`;
+                 if (data.nlp_response) {
+                    resultsDiv.innerHTML += `<details><summary>NLP API Response (for debugging)</summary><pre style="white-space: pre-wrap; word-wrap: break-word; background-color: #f0f0f0; padding:10px; border-radius:4px;">${JSON.stringify(data.nlp_response, null, 2)}</pre></details>`;
+                }
+            } else if (data.results && data.results.length > 0) {
+                let tableHTML = '<table><thead><tr>';
+                data.columns.forEach(column => {
+                    tableHTML += `<th>${column}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+                data.results.forEach(row => {
+                    tableHTML += '<tr>';
+                    row.forEach(cell => {
+                        tableHTML += `<td>${cell !== null ? cell : 'NULL'}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                tableHTML += '</tbody></table>';
+                resultsDiv.innerHTML = tableHTML;
+            } else {
+                resultsDiv.innerHTML = '<p class="no-results-message">Query executed successfully, but no results were returned.</p>';
+            }
+        }
+
+        const modeToggle = document.getElementById('modeToggle');
+        const sqlQuerySection = document.getElementById('sqlQuerySection');
+        const nlpQuerySection = document.getElementById('nlpQuerySection');
+        const currentModeLabel = document.getElementById('currentModeLabel');
+        const resultsDiv = document.getElementById('results');
+        const nlpSqlDisplayDiv = document.getElementById('nlpQuerySql');
+
+        modeToggle.addEventListener('change', function() {
+            if (this.checked) { // NLP Query Mode
+                sqlQuerySection.style.display = 'none';
+                nlpQuerySection.style.display = 'block';
+                currentModeLabel.textContent = 'Natural Language Query Mode';
+            } else { // SQL Query Mode
+                sqlQuerySection.style.display = 'block';
+                nlpQuerySection.style.display = 'none';
+                currentModeLabel.textContent = 'SQL Query Mode';
+            }
+            // Clear results and NLP SQL display when toggling
+            resultsDiv.innerHTML = '<p class="no-results-message">Submit a query to see results here.</p>';
+            if (nlpSqlDisplayDiv) nlpSqlDisplayDiv.style.display = 'none';
+        });
+
+        const loaderContainer = document.getElementById('loaderContainer'); // Updated ID
+
+        // Handler for direct SQL query form
+        document.getElementById('queryForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            
+            resultsDiv.innerHTML = ''; // Clear previous results, this will also clear the loader if it's inside
+            // Re-add loader structure if clearing resultsDiv removes it, or ensure loader is separate
+            resultsDiv.appendChild(loaderContainer); // Ensure loader is part of resultsDiv after clearing
+            if (nlpSqlDisplayDiv) nlpSqlDisplayDiv.style.display = 'none';
+            loaderContainer.style.display = 'flex'; // Show loader
+
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const data = await response.json();
+                displayResults(data, resultsDiv);
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">Network or server error: ${error.message}</p>`;
+                 // Ensure loader is still part of resultsDiv if error message overwrites it
+                if (!resultsDiv.contains(loaderContainer)) {
+                    resultsDiv.appendChild(loaderContainer);
+                }
+            } finally {
+                loaderContainer.style.display = 'none'; // Hide loader
+            }
+        });
+
+        // Handler for NLP query form
+        document.getElementById('nlpQueryForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const nlpQuery = document.getElementById('nlp_query').value;
+
+            resultsDiv.innerHTML = ''; // Clear previous results
+            resultsDiv.appendChild(loaderContainer); // Ensure loader is part of resultsDiv after clearing
+            if (nlpSqlDisplayDiv) nlpSqlDisplayDiv.style.display = 'none';
+            loaderContainer.style.display = 'flex'; // Show loader
+
+            try {
+                const response = await fetch('/nlp_to_sql_query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nlp_query: nlpQuery })
+                });
+                const data = await response.json();
+                displayResults(data, resultsDiv, nlpSqlDisplayDiv, data.generated_sql);
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">Network or server error: ${error.message}</p>`;
+                if (nlpSqlDisplayDiv) nlpSqlDisplayDiv.style.display = 'none';
+                // Ensure loader is still part of resultsDiv if error message overwrites it
+                if (!resultsDiv.contains(loaderContainer)) {
+                    resultsDiv.appendChild(loaderContainer);
+                }
+            } finally {
+                loaderContainer.style.display = 'none'; // Hide loader
+            }
+        });
+    </script>
+</body>
+</html>

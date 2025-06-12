@@ -1,0 +1,357 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #ff8000; /* User's Orange */
+    --primary-hover-color: #e67300; /* Darker Orange */
+    --secondary-color: #666666; /* User's Dark Gray for secondary text/elements */
+    --background-color: #f4f4f4; /* Light gray background for contrast */
+    --surface-color: #ffffff; /* White for cards, containers */
+    --text-color: #333333; /* Darker gray for main text for better contrast */
+    --border-color: #cccccc; /* User's Light Gray for borders */
+    --error-color: #dc3545; /* Keeping existing error colors for now */
+    --error-background-color: #f8d7da;
+    --success-color: #28a745;
+    --success-background-color: #d4edda;
+    --font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-family-monospace: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    --border-radius: 0.375rem; /* 6px */
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --input-focus-shadow: 0 0 0 0.2rem rgba(255, 128, 0, 0.25); /* Orange focus shadow */
+}
+
+body {
+    font-family: var(--font-family-sans-serif);
+    margin: 0;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+.container {
+    max-width: 960px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+h1 {
+    color: var(--primary-color); /* Updated to new primary */
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+    font-size: 2.25rem; /* 36px */
+}
+
+h2 {
+    color: var(--text-color); /* Main text color for H2 */
+    border-bottom: 2px solid var(--primary-color); /* Updated to new primary */
+    padding-bottom: 12px;
+    margin-top: 40px;
+    margin-bottom: 25px;
+    font-weight: 500;
+    font-size: 1.75rem; /* 28px */
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: var(--secondary-color); /* User's dark gray for labels */
+    font-size: 0.9rem; /* 14.4px */
+}
+
+textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-sizing: border-box;
+    font-family: var(--font-family-monospace);
+    font-size: 0.9rem; /* 14.4px */
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+textarea:focus {
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: var(--input-focus-shadow);
+}
+
+button[type="submit"] {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem; /* 16px */
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
+
+button[type="submit"]:hover {
+    background-color: var(--primary-hover-color);
+    transform: translateY(-1px);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+#results {
+    margin-top: 25px;
+    padding: 20px;
+    min-height: 100px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow-x: auto;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+}
+
+#results p {
+    margin-top: 0;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    font-size: 0.875rem; /* 14px */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius); /* Apply to table if overflow visible */
+    overflow: hidden; /* Ensures border-radius clips content */
+}
+
+th, td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-weight: 600;
+    border-top: none; /* Remove top border for header cells if table has its own */
+    border-left: none;
+    border-right: none;
+}
+
+td {
+    border-left: none;
+    border-right: none;
+}
+
+tr:last-child td {
+    border-bottom: none; /* Remove bottom border for last row cells */
+}
+
+tr:nth-child(even) {
+    background-color: #fdfdfd; /* Slightly off-white for even rows */
+}
+
+tr:hover {
+    background-color: #e9ecef; /* Subtle hover for rows */
+}
+
+.error, .success, .loading-message, .no-results-message {
+    padding: 12px 18px;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.error {
+    color: var(--error-color);
+    background-color: var(--error-background-color);
+    border-color: var(--error-color);
+}
+
+.success { /* Added for potential future use */
+    color: var(--success-color);
+    background-color: var(--success-background-color);
+    border-color: var(--success-color);
+}
+
+.loading-message, .no-results-message {
+    color: var(--secondary-color);
+    background-color: #e9ecef; /* Light gray for info messages */
+    border-color: #ced4da;
+    font-style: normal;
+}
+
+#nlpQuerySql {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #e9ecef; /* Consistent with info messages */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    display: none; /* Keep initial state */
+}
+
+#nlpQuerySql h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+#nlpQuerySql pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background-color: var(--surface-color);
+    padding: 10px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-family: var(--font-family-monospace);
+    font-size: 0.85rem;
+}
+
+/* Utility classes */
+.mt-1 { margin-top: 0.25rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mb-1 { margin-bottom: 0.25rem !important; }
+.mb-2 { margin-bottom: 0.5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+
+/* Responsive adjustments (optional, but good practice) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    .container {
+        padding: 20px;
+        margin: 15px auto;
+    }
+    h1 {
+        font-size: 1.8rem; /* Adjust for smaller screens */
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    button[type="submit"] {
+        width: 100%;
+        padding: 12px;
+    }
+    textarea {
+        min-height: 100px;
+    }
+}
+
+/* Toggle Switch Styles */
+.query-mode-toggle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 10px;
+    background-color: var(--background-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.query-mode-toggle #currentModeLabel {
+    margin-left: 15px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc; /* Default state for toggle - using #cccccc directly */
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color); /* User's orange for active toggle */
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Loader Styles */
+.loader-container { /* Changed from .loader-overlay */
+    position: absolute; /* Positioned within the #results div */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.85); /* Slightly more opaque background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10; /* Above results content, but below other potential overlays if any */
+    border-radius: var(--border-radius); /* Match parent's border-radius */
+}
+
+.loader {
+    border: 6px solid var(--border-color); /* Light grey circle part */
+    border-top: 6px solid var(--primary-color); /* Orange for the spinning part */
+    border-radius: 50%;
+    width: 50px;  /* Adjusted size */
+    height: 50px; /* Adjusted size */
+    animation: spin 1s linear infinite;
+    /* Removed position: relative and other dot styles */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* Removed dot-specific styles and keyframes */
