@@ -71,18 +71,51 @@
                 data.columns.forEach(column => {
                     tableHTML += `<th>${column}</th>`;
                 });
+                // Add "Actions" header with "Send Information Request for All" button, styled as primary
+                tableHTML += `<th><button class="btn btn-primary modern-button" onclick="logAllRows()">Send Information Request for All</button></th>`;
                 tableHTML += '</tr></thead><tbody>';
-                data.results.forEach(row => {
+
+                data.results.forEach((row, rowIndex) => {
                     tableHTML += '<tr>';
                     row.forEach(cell => {
                         tableHTML += `<td>${cell !== null ? cell : 'NULL'}</td>`;
                     });
+                    // Add "Information Request" button for each row
+                    tableHTML += `<td><button class="btn modern-button-row" onclick="handleRowInformationRequest(${rowIndex})">Send Information Request</button></td>`;
                     tableHTML += '</tr>';
                 });
                 tableHTML += '</tbody></table>';
                 resultsDiv.innerHTML = tableHTML;
+
+                // Store results globally or in a way accessible to button handlers
+                window.currentResults = data.results;
+                window.currentColumns = data.columns;
+
             } else {
                 resultsDiv.innerHTML = '<p class="no-results-message">Query executed successfully, but no results were returned.</p>';
+            }
+        }
+
+        function handleRowInformationRequest(rowIndex) {
+            const rowData = window.currentResults[rowIndex];
+            const rowObject = {};
+            window.currentColumns.forEach((col, index) => {
+                rowObject[col] = rowData[index];
+            });
+            console.log('Row Information Request:', rowObject);
+        }
+
+        function logAllRows() {
+            if (window.currentResults && window.currentResults.length > 0) {
+                console.log('All Current Rows:', window.currentResults.map(row => {
+                    const rowObject = {};
+                    window.currentColumns.forEach((col, index) => {
+                        rowObject[col] = row[index];
+                    });
+                    return rowObject;
+                }));
+            } else {
+                console.log('No rows to log.');
             }
         }
 
