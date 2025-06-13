@@ -61,38 +61,79 @@
                 generatedSqlDisplayDiv.style.display = 'none';
             }
 
+            resultsDiv.innerHTML = ''; // Clear previous content
+
             if (data.error) {
                 resultsDiv.innerHTML = `<p class="error">Error: ${data.error}${data.generated_sql ? '<br><br>Attempted SQL: ' + data.generated_sql : ''}</p>`;
                  if (data.nlp_response) {
                     resultsDiv.innerHTML += `<details><summary>NLP API Response (for debugging)</summary><pre style="white-space: pre-wrap; word-wrap: break-word; background-color: #f0f0f0; padding:10px; border-radius:4px;">${JSON.stringify(data.nlp_response, null, 2)}</pre></details>`;
                 }
-            } else if (data.results && data.results.length > 0) {
-                let tableHTML = '<table><thead><tr>';
-                data.columns.forEach(column => {
-                    tableHTML += `<th>${column}</th>`;
-                });
-                // Add "Actions" header with "Send Information Request for All" button, styled as primary
-                tableHTML += `<th><button class="btn btn-primary modern-button" onclick="logAllRows()">Send Information Request for All</button></th>`;
-                tableHTML += '</tr></thead><tbody>';
-
-                data.results.forEach((row, rowIndex) => {
-                    tableHTML += '<tr>';
-                    row.forEach(cell => {
-                        tableHTML += `<td>${cell !== null ? cell : 'NULL'}</td>`;
-                    });
-                    // Add "Information Request" button for each row
-                    tableHTML += `<td><button class="btn modern-button-row" onclick="handleRowInformationRequest(${rowIndex})">Send Information Request</button></td>`;
-                    tableHTML += '</tr>';
-                });
-                tableHTML += '</tbody></table>';
-                resultsDiv.innerHTML = tableHTML;
-
-                // Store results globally or in a way accessible to button handlers
-                window.currentResults = data.results;
-                window.currentColumns = data.columns;
-
             } else {
-                resultsDiv.innerHTML = '<p class="no-results-message">Query executed successfully, but no results were returned.</p>';
+                let messageHTML = '';
+                if (data.message) {
+                    // Display the server message (e.g., "View created successfully")
+                    messageHTML = `<p class="info-message">${data.message}</p>`;
+                }
+
+                if (data.results && data.results.length > 0) {
+                    let anyRowHasEmail = false;
+                    // First pass to see if any row will have an email button
+                    data.results.forEach(row => {
+                        row.forEach(cell => {
+                            if (cell && typeof cell === 'string' && /\S+@\S+\.\S+/.test(cell)) {
+                                anyRowHasEmail = true;
+                            }
+                        });
+                        if (anyRowHasEmail) return; // Optimization: exit early if found
+                    });
+
+                    let tableHTML = '<table><thead><tr>';
+                    data.columns.forEach(column => {
+                        tableHTML += `<th>${column}</th>`;
+                    });
+
+                    // Conditionally add "Actions" header and "Send All" button
+                    if (anyRowHasEmail) {
+                        tableHTML += `<th><button class="btn btn-primary modern-button" onclick="logAllRows()">Send Information Request for All</button></th>`;
+                    }
+                    tableHTML += '</tr></thead><tbody>';
+
+                    data.results.forEach((row, rowIndex) => {
+                        tableHTML += '<tr>';
+                        let currentRowHasEmail = false;
+                        row.forEach(cell => {
+                            tableHTML += `<td>${cell !== null ? cell : 'NULL'}</td>`;
+                            if (cell && typeof cell === 'string' && /\S+@\S+\.\S+/.test(cell)) {
+                                currentRowHasEmail = true;
+                            }
+                        });
+
+                        // Conditionally add individual button cell
+                        if (anyRowHasEmail) { // Only add this <td> if the Actions column exists
+                            if (currentRowHasEmail) {
+                                tableHTML += `<td><button class="btn modern-button-row" onclick="handleRowInformationRequest(${rowIndex})">Send Information Request</button></td>`;
+                            } else {
+                                tableHTML += '<td></td>'; // Empty cell in Actions column if no email for this row
+                            }
+                        }
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody></table>';
+                    resultsDiv.innerHTML = messageHTML + tableHTML; // Prepend message to table
+
+                    // Store results globally
+                    window.currentResults = data.results;
+                    window.currentColumns = data.columns;
+
+                } else if (data.message) { // Only a message, no results (e.g. view created, error fetching sample)
+                    resultsDiv.innerHTML = messageHTML;
+                     if (data.view_data_error) { // If there was an error fetching view data, append it
+                        resultsDiv.innerHTML += `<p class="warning">Details on fetching view data: ${data.view_data_error}</p>`;
+                    }
+                }
+                 else { // No error, no message, no results
+                    resultsDiv.innerHTML = '<p class="no-results-message">Query executed successfully, but no results were returned.</p>';
+                }
             }
         }
 
