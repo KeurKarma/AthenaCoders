@@ -20,23 +20,40 @@
     --input-focus-shadow: 0 0 0 0.2rem rgba(255, 128, 0, 0.25); /* Orange focus shadow */
 }
 
+html {
+    height: 100%;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+*, *:before, *:after {
+    box-sizing: inherit; /* Inherit box-sizing from html */
+}
+
 body {
     font-family: var(--font-family-sans-serif);
     margin: 0;
-    padding: 20px;
+    padding: 0; /* Remove body padding, apply to container if needed */
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
     font-weight: 400;
+    min-height: 100vh; /* Ensure body takes at least full viewport height */
+    display: flex; /* Use flex to make container fill height */
+    flex-direction: column; /* Stack children vertically */
 }
 
 .container {
-    max-width: 960px;
-    margin: 30px auto;
-    padding: 30px;
+    width: 100%; /* Full width */
+    max-width: 100%; /* Override previous max-width */
+    flex-grow: 1; /* Allow container to grow and fill available space */
+    margin: 0; /* Remove auto margins */
+    padding: 20px; /* Add padding to the container itself */
     background-color: var(--surface-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    border-radius: 0; /* No border-radius for full screen */
+    box-shadow: none; /* No box-shadow for full screen */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Allow vertical scrolling within the container if content overflows */
 }
 
 h1 {
@@ -117,7 +134,8 @@ button[type="submit"]:active {
     border-radius: var(--border-radius);
     overflow-x: auto; /* Allow horizontal scrolling */
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
-    position: relative; 
+    position: relative;
+    flex-shrink: 0; /* Prevent results div from shrinking if content above is large */
     /* scrollbar-gutter removed as sticky column is removed */
 }
 
@@ -242,13 +260,8 @@ tr:hover td {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    .container {
-        padding: 20px;
-        margin: 15px auto;
-    }
+    /* Body padding is already 0, container padding is 20px */
+    /* .container margin is already 0 */
     h1 {
         font-size: 1.8rem;
     }
